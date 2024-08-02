@@ -17,5 +17,26 @@
 			{% endif %}
 		</div>
 	</div>
+	<div class="row">
+		<a class="btn btn-success btn-font col-3 text-decoration-none p-5 text-dark font-weight-bold d-flex justify-content-center rounded shadow" href="#" id="create-shift-btn">Start Shift</a>
+	</div>
 </div>
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<script>
+    $(document).ready(function(){
+        $("#create-shift-btn").click(function(event){
+            event.preventDefault();
+            $.ajax({
+                url: "{% url 'create_shift' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    alert("Shift created: " + data.start_time + " - " + data.end_time);
+                }
+            });
+        });
+    });
+</script>
 {% endblock content %}
