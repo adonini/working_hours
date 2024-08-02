@@ -1,0 +1,21 @@
+{% extends 'login/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div>
+	<div class="row">
+		<div class="col-sm-11 col-md-5 mx-auto mt-5 px-3 text-center">
+			{% if user.is_authenticated %}
+				<h1 class="fw-light">LST Shifters</h1>
+				<p class="fw-light">Manage your woking times starting and finishing it once you end your shift.</p>
+			{% else %}
+				<div>
+					<h1 class="fw-light">LST Shifters</h1>
+					<br/>
+					<a href="{% url 'login' %}" class="btn btn-primary">Log In To Get Started!</a>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+</div>
+{% endblock content %}
