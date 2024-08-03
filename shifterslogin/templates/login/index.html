@@ -3,30 +3,51 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row w-100 justify-content-center">
-        <div class="col-md-8 text-center">
-            {% if user.is_authenticated %}
-				<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
-				<p class="fw-light">If you are having a night off, press the "Night off" button.</p>
-				<p class="fw-light">To start counting working time press "Start shift".</p>
-                <div class="d-flex justify-content-center">
-                    <a class="btn btn-success btn-font mx-2 text-decoration-none p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow start-shift-btn"
-					href="javascript:void(0);" id="start-shift-btn">
-                        <i class="fa-regular fa-circle-play me-2"></i> Start shift
-                    </a>
-                    <a class="btn btn-primary btn-font mx-2 text-decoration-none p-4 font-weight-bold d-flex justify-content-center align-items-center rounded shadow off-night-btn"
-					href="javascript:void(0);" id="night-off-btn">
-                        <img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
-                    </a>
-                </div>
-            {% else %}
-                <div>
-                    <h4 class="fw-light">Authenticate yourself to track working hours </h1>
-                    <br/>
-                    <a href="{% url 'login' %}" class="btn btn-primary text-decoration-none p-4 font-weight-bold justify-content-center align-items-center rounded shadow">Log In To Get Started!</a>
-                </div>
-            {% endif %}
+<style>
+    .sidebar h4 {
+        text-transform: none; /* Prevents text from being capitalized */
+    }
+</style>
+<div class="container mt-1">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-9 mb-3 mb-md-0">
+            <div class="text-center">
+                {% if user.is_authenticated %}
+                    <h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+                    <p class="fw-light">If you are having a night off, press the "Night off" button.</p>
+                    <p class="fw-light">To start counting working time press "Start shift".</p>
+                    <div class="d-flex justify-content-center">
+                        <a class="btn btn-success btn-font mx-2 text-decoration-none p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow start-shift-btn"
+                            href="javascript:void(0);" id="start-shift-btn">
+                            <i class="fa-regular fa-circle-play me-2"></i> Start shift
+                        </a>
+                        <a class="btn btn-primary btn-font mx-2 text-decoration-none p-4 font-weight-bold d-flex justify-content-center align-items-center rounded shadow off-night-btn"
+                            href="javascript:void(0);" id="night-off-btn">
+                            <img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
+                        </a>
+                    </div>
+                {% else %}
+                    <div>
+                        <h4 class="fw-light">Authenticate yourself to track working hours</h4>
+                        <br/>
+                        <a href="{% url 'login' %}" class="btn btn-primary text-decoration-none p-4 font-weight-bold justify-content-center align-items-center rounded shadow">Log In To Get Started!</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+		<!-- Sidebar -->
+        <div class="col-md-3 mt-2">
+            <div class="sidebar custom-sidebar">
+                <h4 class="d-flex justify-content-center align-items-center text-center" id="current-date-time"></h4>
+
+                <h4 class="text-center mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Day Total</h4>
+                <p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_today|floatformat:2 }} hours</p>
+
+                <h4 class="text-center mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Week Total</h4>
+                <p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_week|floatformat:2 }} hours</p>
+            </div>
         </div>
     </div>
 </div>
@@ -52,5 +73,28 @@
             });
         });
     });
+
+	function updateDateTime() {
+        var now = new Date();
+
+        // Format day to "Saturday" (in title case)
+        var optionsDay = { weekday: 'long' };
+        var formattedDay = now.toLocaleDateString('en-US', optionsDay);
+
+        // Format date to "August 3" (in title case)
+        var optionsDate = { month: 'long', day: 'numeric' };
+        var formattedDate = now.toLocaleDateString('en-US', optionsDate);
+
+        // Format time to "21:24"
+        var optionsTime = { hour: '2-digit', minute: '2-digit', hour12: false };
+        var formattedTime = now.toLocaleTimeString('en-US', optionsTime);
+
+        // Update the date and time in the sidebar
+        document.getElementById('current-date-time').innerHTML = `${formattedDay}<br>${formattedDate}<br>${formattedTime}`;
+    }
+
+    // Update date and time immediately and then every minute
+    updateDateTime();
+    setInterval(updateDateTime, 60000);  // Update every minute
 </script>
 {% endblock content %}

@@ -1,3 +1,16 @@
 .btn-font{
     font-size: 2rem;
 }
+
+.custom-sidebar {
+    background-color: #f5f5f5; /* Light gray background */
+    border: 1px solid #ddd; /* Light gray border for contour */
+    border-radius: 5px; /* Rounded corners */
+    padding: 15px; /* Padding inside the sidebar */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow for depth */
+}
+
+.custom-sidebar h4,
+.custom-sidebar p {
+    margin: 0;
+}

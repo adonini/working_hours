@@ -8,6 +8,7 @@ from .models import Shift, ShiftType
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from datetime import timedelta
 
 
 def logout_user(request):
@@ -21,7 +22,54 @@ class Index(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['shift-types'] = ShiftType.objects.all()
+        context['shift_types'] = ShiftType.objects.all()
+
+        if self.request.user.is_authenticated:
+            now = timezone.now()
+            today = now.date()
+
+            # Define the start and end of the week with Monday as the start and Sunday as the end
+            start_of_week = today - timedelta(days=(today.weekday() - 0) % 7)  # Monday is 0
+            end_of_week = start_of_week + timedelta(days=6)  # Sunday is the last day of the week
+
+            # Get shifts for today
+            shifts_today = Shift.objects.filter(user=self.request.user, shift_start__date=today)
+
+            # Calculate total hours worked and breaks for today
+            total_hours_worked_today = sum(
+                (shift.shift_end - shift.shift_start).total_seconds()
+                for shift in shifts_today if shift.shift_end
+            )
+            total_hours_worked_today /= 3600  # Convert to hours
+
+            # total_hours_break_today = sum(
+            #     (shift.break_end - shift.break_start).total_seconds()
+            #     for shift in shifts_today if shift.break_end and shift.break_start
+            # )
+            # total_hours_break_today /= 3600  # Convert to hours
+
+            # Get shifts for the week
+            shifts_week = Shift.objects.filter(user=self.request.user, shift_start__date__range=[start_of_week, end_of_week])
+
+            # Calculate total hours worked and breaks for the week
+            total_hours_worked_week = sum(
+                (shift.shift_end - shift.shift_start).total_seconds()
+                for shift in shifts_week if shift.shift_end
+            )
+            total_hours_worked_week /= 3600  # Convert to hours
+
+            # total_hours_break_week = sum(
+            #     (shift.break_end - shift.break_start).total_seconds()
+            #     for shift in shifts_week if shift.break_end and shift.break_start
+            # )
+            # total_hours_break_week /= 3600  # Convert to hours
+
+            context['current_datetime'] = now
+            context['total_hours_worked_today'] = total_hours_worked_today
+            #context['total_hours_break_today'] = total_hours_break_today
+            context['total_hours_worked_week'] = total_hours_worked_week
+            #context['total_hours_break_week'] = total_hours_break_week
+
         return context
 
 
