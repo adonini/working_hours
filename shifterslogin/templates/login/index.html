@@ -42,7 +42,7 @@
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
                 success: function(data) {
-                    alert("Shift started at: " + data.start_time);
+                    //alert("Shift started at: " + data.start_time);
                     window.location.href = "{% url 'shift_details' %}"; // redirect to detail page
                 },
 				error: function(xhr, status, error) {

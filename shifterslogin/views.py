@@ -77,6 +77,7 @@ def end_shift(request):
     if shift:
         shift.shift_end = timezone.now()
         shift.save()
+        messages.success(request, "You have ended your shift.")
     return redirect('index')  # TODO: maybe another page instead of back to the home?
 
 
