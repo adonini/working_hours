@@ -1,39 +1,53 @@
 {% extends 'login/base.html' %}
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div>
-	<div class="row">
-		<div class="col-sm-11 col-md-5 mx-auto mt-5 px-3 text-center">
-			{% if user.is_authenticated %}
-				<h1 class="fw-light">LST Shifters</h1>
-				<p class="fw-light">Manage your woking times starting and finishing it once you end your shift.</p>
-			{% else %}
-				<div>
-					<h1 class="fw-light">LST Shifters</h1>
-					<br/>
-					<a href="{% url 'login' %}" class="btn btn-primary">Log In To Get Started!</a>
-				</div>
-			{% endif %}
-		</div>
-	</div>
-	<div class="row">
-		<a class="btn btn-success btn-font col-3 text-decoration-none p-5 text-dark font-weight-bold d-flex justify-content-center rounded shadow" href="#" id="create-shift-btn">Start Shift</a>
-	</div>
+<div class="container mt-5">
+    <div class="row w-100 justify-content-center">
+        <div class="col-md-8 text-center">
+            {% if user.is_authenticated %}
+				<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+				<p class="fw-light">If you are having a night off, press the "Night off" button.</p>
+				<p class="fw-light">To start counting working time press "Start shift".</p>
+                <div class="d-flex justify-content-center">
+                    <a class="btn btn-success btn-font mx-2 text-decoration-none p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow start-shift-btn"
+					href="javascript:void(0);" id="start-shift-btn">
+                        <i class="fa-regular fa-circle-play me-2"></i> Start shift
+                    </a>
+                    <a class="btn btn-primary btn-font mx-2 text-decoration-none p-4 font-weight-bold d-flex justify-content-center align-items-center rounded shadow off-night-btn"
+					href="javascript:void(0);" id="night-off-btn">
+                        <img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
+                    </a>
+                </div>
+            {% else %}
+                <div>
+                    <h4 class="fw-light">Authenticate yourself to track working hours </h1>
+                    <br/>
+                    <a href="{% url 'login' %}" class="btn btn-primary text-decoration-none p-4 font-weight-bold justify-content-center align-items-center rounded shadow">Log In To Get Started!</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
     $(document).ready(function(){
-        $("#create-shift-btn").click(function(event){
+        $("#start-shift-btn").click(function(event){
             event.preventDefault();
             $.ajax({
-                url: "{% url 'create_shift' %}",
+                url: "{% url 'start_shift' %}",
                 type: "POST",
                 data: {
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
                 success: function(data) {
-                    alert("Shift created: " + data.start_time + " - " + data.end_time);
+                    alert("Shift started at: " + data.start_time);
+                    window.location.href = "{% url 'shift_details' %}"; // redirect to detail page
+                },
+				error: function(xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    alert("An error occurred. Please try again.");
                 }
             });
         });

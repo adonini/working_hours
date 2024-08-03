@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark" data-bs-theme="dark">
+<nav class="navbar navbar-expand-lg bg-dark pt-4 pb-4"" data-bs-theme="dark">
     <div class="container-fluid">
         <a class="navbar-brand position-absolute top-50 start-50 translate-middle" href="#">
             <h1 class="text-white text-center">
@@ -23,14 +23,6 @@
                     </li>
                 </ul>
             </div>
-        {% else %}
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link btn btn-light" href="{% url 'login' %}">
-                        <i class="bi bi-person-fill"></i> Login
-                    </a>
-                </li>
-            </ul>
         {% endif %}
     </div>
 </nav>
