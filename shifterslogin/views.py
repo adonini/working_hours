@@ -32,8 +32,13 @@ class Index(TemplateView):
             start_of_week = today - timedelta(days=(today.weekday() - 0) % 7)  # Monday is 0
             end_of_week = start_of_week + timedelta(days=6)  # Sunday is the last day of the week
 
-            # Fetch shift history (last 10 items)
-            shifts_history = Shift.objects.filter(user=self.request.user).order_by('-shift_start')[:10]
+            # Fetch shift history (last 30 days)
+            thirty_days_ago = today - timedelta(days=30)
+
+            # Fetch shift history for the last 30 days
+            shifts_history = Shift.objects.filter(user=self.request.user,
+                                                  shift_start__gte=thirty_days_ago).order_by('-shift_start')
+
             # Calculate duration for each shift in hours
             for shift in shifts_history:
                 if shift.shift_end:
@@ -41,6 +46,7 @@ class Index(TemplateView):
                     shift.duration_hours = duration_seconds / 3600
                 else:
                     shift.duration_hours = None
+
             # Get shifts for today
             shifts_today = Shift.objects.filter(user=self.request.user, shift_start__date=today)
 
