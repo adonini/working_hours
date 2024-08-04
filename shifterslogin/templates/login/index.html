@@ -52,26 +52,26 @@
 			<div class="container mt-5">
 				<h2 class="text-center font-weight-bold">Your Shift History</h2>
 				<div class="table-responsive">
-					<table class="table table-bordered text-center">
+					<table id="history-table" class="table table-sm table-bordered table-striped table-hover text-center cell-border dt-center">
 						<thead>
 							<tr>
-								<th>Start Time</th>
-								<th>End Time</th>
-								<th>Duration</th>
+								<th class="text-center">Start Time</th>
+								<th class="text-center">End Time</th>
+								<th class="text-center">Duration</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for shift in shifts_history %}
 								<tr>
-									<td>{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
-									<td>
+									<td class="text-center">{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
+									<td class="text-center">
 										{% if shift.shift_end %}
 											{{ shift.shift_end|date:"Y-m-d H:i:s" }}
 										{% else %}
 											Ongoing
 										{% endif %}
 									</td>
-									<td>
+									<td class="text-center">
 										{% if shift.duration_hours %}
 											{{ shift.duration_hours|floatformat:2 }} hours
 										{% else %}
@@ -98,7 +98,6 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
     $(document).ready(function(){
         $("#start-shift-btn").click(function(event){
@@ -119,6 +118,13 @@
             });
         });
     });
+
+	$(function() {
+		$('#history-table').DataTable({
+			responsive: true,
+			searching: false, // Disable the search box
+		});
+	});
 
     function updateDateTime() {
         var now = new Date();
