@@ -14,3 +14,14 @@
 .custom-sidebar p {
     margin: 0;
 }
+
+/* Navbar style for guests (not authenticated) */
+.navbar.navbar-guest {
+    padding-top: 3rem !important; /* Increase padding for larger navbar */
+    padding-bottom: 3rem !important; /* Increase padding for larger navbar */
+}
+
+/* You can also adjust font sizes or other styles here */
+.navbar-guest .navbar-brand h1 {
+    font-size: 2.5rem; /* Larger font size for guest view */
+}
