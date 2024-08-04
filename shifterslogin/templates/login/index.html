@@ -3,26 +3,22 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<style>
-    .sidebar h4 {
-        text-transform: none; /* Prevents text from being capitalized */
-    }
 </style>
 <div class="container mt-1">
     <div class="row">
-        <!-- Main Content -->
-        <div class="col-md-9 mb-3 mb-md-0">
-            <div class="text-center">
-                {% if user.is_authenticated %}
-					{% if active_shift %}
-						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
-						<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
-						<p class="fw-light">You started your shift at: {{ active_shift.shift_start }}</p>
-						<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
-						href="{% url 'shift_details' %}">
-							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
-						</a>
-					{% else %}
+		{% if user.is_authenticated %}
+			<!-- Main Content -->
+			<div class="col-md-9 mb-3 mb-md-0 text-center">
+				{% if active_shift %}
+					<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+					<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
+					<p class="fw-light">You started your shift at: {{ active_shift.shift_start }}</p>
+					<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
+					href="{% url 'shift_details' %}">
+						<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
+					</a>
+				{% else %}
+					<div>
 						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
 						<p class="fw-light">If you are having a night off, press the "Night off" button.</p>
 						<p class="fw-light">To start counting working time press "Start shift".</p>
@@ -36,31 +32,72 @@
 								<img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
 							</a>
 						</div>
-					{% endif %}
-                {% else %}
-                    <div>
-                        <h4 class="fw-light">Authenticate yourself to track working hours</h4>
-                        <br/>
-                        <a href="{% url 'login' %}" class="btn btn-primary text-decoration-none p-4 font-weight-bold justify-content-center align-items-center rounded shadow">Log In To Get Started!</a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+					</div>
+				{% endif %}
+			</div>
+			<!-- Sidebar -->
+			<div class="col-md-3 mt-2">
+				<div class="sidebar custom-sidebar">
+					<p class="d-flex fs-4 justify-content-center align-items-center text-center" id="current-date-time"></p>
 
-		<!-- Sidebar -->
-        <div class="col-md-3 mt-2">
-            <div class="sidebar custom-sidebar">
-                <h4 class="d-flex justify-content-center align-items-center text-center" id="current-date-time"></h4>
+					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Day Total</p>
+					<p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_today|floatformat:2 }} hours</p>
 
-                <h4 class="text-center mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Day Total</h4>
-                <p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_today|floatformat:2 }} hours</p>
+					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Week Total</p>
+					<p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_week|floatformat:2 }} hours</p>
+				</div>
+			</div>
 
-                <h4 class="text-center mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Week Total</h4>
-                <p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_week|floatformat:2 }} hours</p>
-            </div>
-        </div>
+			<!-- History Section -->
+			<div class="container mt-5">
+				<h2 class="text-center font-weight-bold">Your Shift History</h2>
+				<div class="table-responsive">
+					<table class="table table-bordered text-center">
+						<thead>
+							<tr>
+								<th>Start Time</th>
+								<th>End Time</th>
+								<th>Duration</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for shift in shifts_history %}
+								<tr>
+									<td>{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
+									<td>
+										{% if shift.shift_end %}
+											{{ shift.shift_end|date:"Y-m-d H:i:s" }}
+										{% else %}
+											Ongoing
+										{% endif %}
+									</td>
+									<td>
+										{% if shift.duration_hours %}
+											{{ shift.duration_hours|floatformat:2 }} hours
+										{% else %}
+											Ongoing
+										{% endif %}
+									</td>
+								</tr>
+							{% empty %}
+								<tr>
+									<td colspan="3" class="text-center">No history available.</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		{% else %}
+			<div class="text-center">
+				<p class="fw-light fs-3">Authenticate yourself to track working hours</p>
+				<br/>
+				<a href="{% url 'login' %}" class="btn btn-primary p-4 fs-5 font-weight-bold rounded shadow">Log In To Get Started!</a>
+			</div>
+		{% endif %}
     </div>
 </div>
+
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 <script>
     $(document).ready(function(){
@@ -73,10 +110,9 @@
                     csrfmiddlewaretoken: '{{ csrf_token }}'
                 },
                 success: function(data) {
-                    //alert("Shift started at: " + data.start_time);
-                    window.location.href = "{% url 'shift_details' %}"; // redirect to detail page
+                    window.location.href = "{% url 'shift_details' %}";
                 },
-				error: function(xhr, status, error) {
+                error: function(xhr, status, error) {
                     console.error("AJAX Error:", status, error);
                     alert("An error occurred. Please try again.");
                 }
@@ -84,27 +120,22 @@
         });
     });
 
-	function updateDateTime() {
+    function updateDateTime() {
         var now = new Date();
 
-        // Format day to "Saturday" (in title case)
         var optionsDay = { weekday: 'long' };
         var formattedDay = now.toLocaleDateString('en-US', optionsDay);
 
-        // Format date to "August 3" (in title case)
         var optionsDate = { month: 'long', day: 'numeric' };
         var formattedDate = now.toLocaleDateString('en-US', optionsDate);
 
-        // Format time to "21:24"
         var optionsTime = { hour: '2-digit', minute: '2-digit', hour12: false };
         var formattedTime = now.toLocaleTimeString('en-US', optionsTime);
 
-        // Update the date and time in the sidebar
         document.getElementById('current-date-time').innerHTML = `${formattedDay}<br>${formattedDate}<br>${formattedTime}`;
     }
 
-    // Update date and time immediately and then every minute
     updateDateTime();
-    setInterval(updateDateTime, 60000);  // Update every minute
+    setInterval(updateDateTime, 60000);
 </script>
 {% endblock content %}

@@ -32,6 +32,15 @@ class Index(TemplateView):
             start_of_week = today - timedelta(days=(today.weekday() - 0) % 7)  # Monday is 0
             end_of_week = start_of_week + timedelta(days=6)  # Sunday is the last day of the week
 
+            # Fetch shift history (last 10 items)
+            shifts_history = Shift.objects.filter(user=self.request.user).order_by('-shift_start')[:10]
+            # Calculate duration for each shift in hours
+            for shift in shifts_history:
+                if shift.shift_end:
+                    duration_seconds = (shift.shift_end - shift.shift_start).total_seconds()
+                    shift.duration_hours = duration_seconds / 3600
+                else:
+                    shift.duration_hours = None
             # Get shifts for today
             shifts_today = Shift.objects.filter(user=self.request.user, shift_start__date=today)
 
@@ -64,14 +73,16 @@ class Index(TemplateView):
             # )
             # total_hours_break_week /= 3600  # Convert to hours
 
+            # Check for active shift
+            active_shift = Shift.objects.filter(user=self.request.user, shift_active=True).last()
+
+            # create context
             context['current_datetime'] = now
             context['total_hours_worked_today'] = total_hours_worked_today
             #context['total_hours_break_today'] = total_hours_break_today
             context['total_hours_worked_week'] = total_hours_worked_week
             #context['total_hours_break_week'] = total_hours_break_week
-
-            # Check for active shift
-            active_shift = Shift.objects.filter(user=self.request.user, shift_active=True).last()
+            context['shifts_history'] = shifts_history
             context['active_shift'] = active_shift
         return context
 
