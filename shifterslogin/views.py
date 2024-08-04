@@ -70,6 +70,9 @@ class Index(TemplateView):
             context['total_hours_worked_week'] = total_hours_worked_week
             #context['total_hours_break_week'] = total_hours_break_week
 
+            # Check for active shift
+            active_shift = Shift.objects.filter(user=self.request.user, shift_active=True).last()
+            context['active_shift'] = active_shift
         return context
 
 
@@ -93,7 +96,8 @@ def start_shift(request):
         # Crear un nuevo registro en el modelo Shift
         shift = Shift.objects.create(
             user=request.user,
-            shift_start=timezone.now()
+            shift_start=timezone.now(),
+            shift_active=True
             #end_time=timezone.now() + timezone.timedelta(hours=8),
             #employee="Default Employee"
         )
@@ -121,9 +125,10 @@ def shift_details(request):
 
 
 def end_shift(request):
-    shift = Shift.objects.filter(user=request.user, shift_end__isnull=True).last()
+    shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
     if shift:
         shift.shift_end = timezone.now()
+        shift.shift_active = False  # Set the active state to false
         shift.save()
         messages.success(request, "You have ended your shift.")
     return redirect('index')  # TODO: maybe another page instead of back to the home?

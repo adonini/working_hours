@@ -17,6 +17,7 @@ class Shift(models.Model):
     shift_type = models.ForeignKey(ShiftType, on_delete=models.SET_NULL, blank=True, null=True)
     shift_start = models.DateTimeField(blank=True, null=True)
     shift_end = models.DateTimeField(blank=True, null=True)
+    shift_active = models.BooleanField(default=True)  # New flag to indicate active shift. Default True when shift starts
 
     class Meta:
         db_table = 'shifts'

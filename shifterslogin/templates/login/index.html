@@ -14,19 +14,29 @@
         <div class="col-md-9 mb-3 mb-md-0">
             <div class="text-center">
                 {% if user.is_authenticated %}
-                    <h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
-                    <p class="fw-light">If you are having a night off, press the "Night off" button.</p>
-                    <p class="fw-light">To start counting working time press "Start shift".</p>
-                    <div class="d-flex justify-content-center">
-                        <a class="btn btn-outline-success btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow start-shift-btn"
-                            href="javascript:void(0);" id="start-shift-btn">
-                            <i class="fa-regular fa-circle-play me-2"></i> Start shift
-                        </a>
-                        <a class="btn btn-outline-warning btn-font mx-2 border-4 text-dark p-4 font-weight-bold d-flex justify-content-center align-items-center rounded shadow off-night-btn"
-                            href="javascript:void(0);" id="night-off-btn">
-                            <img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
-                        </a>
-                    </div>
+					{% if active_shift %}
+						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+						<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
+						<p class="fw-light">You started your shift at: {{ active_shift.shift_start }}</p>
+						<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
+						href="{% url 'shift_details' %}">
+							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
+						</a>
+					{% else %}
+						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+						<p class="fw-light">If you are having a night off, press the "Night off" button.</p>
+						<p class="fw-light">To start counting working time press "Start shift".</p>
+						<div class="d-flex justify-content-center">
+							<a class="btn btn-outline-success btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow start-shift-btn"
+								href="javascript:void(0);" id="start-shift-btn">
+								<i class="fa-regular fa-circle-play me-2"></i> Start shift
+							</a>
+							<a class="btn btn-outline-warning btn-font mx-2 border-4 text-dark p-4 font-weight-bold d-flex justify-content-center align-items-center rounded shadow off-night-btn"
+								href="javascript:void(0);" id="night-off-btn">
+								<img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
+							</a>
+						</div>
+					{% endif %}
                 {% else %}
                     <div>
                         <h4 class="fw-light">Authenticate yourself to track working hours</h4>
