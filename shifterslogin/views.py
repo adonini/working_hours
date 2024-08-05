@@ -35,8 +35,6 @@ class Index(TemplateView):
 
             # Fetch shift history (last 30 days)
             thirty_days_ago = today - timedelta(days=30)
-
-            # Fetch shift history for the last 30 days
             shifts_history = Shift.objects.filter(user=self.request.user,
                                                   shift_start__gte=thirty_days_ago).order_by('-shift_start')
 
@@ -51,37 +49,53 @@ class Index(TemplateView):
             # Get shifts for today
             shifts_today = Shift.objects.filter(user=self.request.user, shift_start__date=today)
 
-            # Calculate total hours worked and breaks for today
+            # Calculate total hours worked for today
             total_hours_worked_today = sum(
                 (shift.shift_end - shift.shift_start).total_seconds()
                 for shift in shifts_today if shift.shift_end
             )
+
+            # Calculate total break time for today
+            breaks_today = Break.objects.filter(shift__user=self.request.user, break_start__date=today)
+            total_breaks_today = sum(
+                (brk.break_end - brk.break_start).total_seconds()
+                for brk in breaks_today if brk.break_end
+            )
+
+            # Adjust total hours worked today by subtracting breaks
+            total_hours_worked_today -= total_breaks_today
             total_hours_worked_today /= 3600  # Convert to hours
+            total_breaks_today /= 3600  # Convert to hours
+
+            # Calculate the sum of total hours worked and total breaks
+            total_worked_and_breaks_today = total_hours_worked_today + total_breaks_today
 
             # Get shifts for the week
             shifts_week = Shift.objects.filter(user=self.request.user, shift_start__date__range=[start_of_week, end_of_week])
 
-            # Calculate total hours worked and breaks for the week
+            # Calculate total hours worked for the week
             total_hours_worked_week = sum(
                 (shift.shift_end - shift.shift_start).total_seconds()
                 for shift in shifts_week if shift.shift_end
             )
+
+            # Calculate total break time for the week
+            breaks_week = Break.objects.filter(shift__user=self.request.user, break_start__date__range=[start_of_week, end_of_week])
+            total_breaks_week = sum(
+                (brk.break_end - brk.break_start).total_seconds()
+                for brk in breaks_week if brk.break_end
+            )
+
+            # Adjust total hours worked week by subtracting breaks
+            total_hours_worked_week -= total_breaks_week
             total_hours_worked_week /= 3600  # Convert to hours
+            total_breaks_week /= 3600  # Convert to hours
+
+            # Calculate the sum of total hours worked and total breaks for the week
+            total_worked_and_breaks_week = total_hours_worked_week + total_breaks_week
 
             # Check for active shift
             active_shift = Shift.objects.filter(user=self.request.user, shift_active=True).last()
-
-            # Calculate the total break time in minutes for today
-            breaks_today = Break.objects.filter(shift__user=self.request.user, break_start__date=today)
-            total_breaks_today = sum((brk.break_end - brk.break_start).total_seconds()
-                                     for brk in breaks_today if brk.break_end)
-            total_breaks_today /= 3600  # Convert to hours
-
-            # Calculate the total break time in minutes for this week
-            breaks_week = Break.objects.filter(shift__user=self.request.user, break_start__date__range=[start_of_week, end_of_week])
-            total_breaks_week = sum((brk.break_end - brk.break_start).total_seconds()
-                                    for brk in breaks_week if brk.break_end)
-            total_breaks_week /= 3600  # Convert to hours
 
             # Check for active break
             active_break = Break.objects.filter(shift=active_shift, break_active=True).last() if active_shift else None
@@ -95,6 +109,8 @@ class Index(TemplateView):
             context['total_breaks_today'] = total_breaks_today
             context['total_breaks_week'] = total_breaks_week
             context['active_break'] = active_break
+            context['total_worked_and_breaks_today'] = total_worked_and_breaks_today
+            context['total_worked_and_breaks_week'] = total_worked_and_breaks_week
         return context
 
 
