@@ -25,3 +25,35 @@
 .navbar-guest .navbar-brand h1 {
     font-size: 2.5rem; /* Larger font size for guest view */
 }
+
+/* Style for DataTable borders */
+#history-table {
+    border-collapse: collapse; /* Ensure borders collapse into a single border */
+    width: 100%; /* Make sure the table width is 100% */
+}
+
+/* Style for table headers */
+#history-table thead th {
+    border: 1px solid #dee2e6;
+    font-weight: bold; /* Make header text bold */
+}
+
+/* Style for table cells */
+#history-table tbody td {
+    border: 1px solid #dee2e6;
+}
+
+/* Style for table rows */
+#history-table tr {
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Highlight the row on hover */
+#history-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+/* Add a border around the whole table */
+#history-table {
+    border: 1px solid #000;
+}

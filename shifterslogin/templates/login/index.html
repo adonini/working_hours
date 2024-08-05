@@ -178,6 +178,8 @@
 		$('#history-table').DataTable({
 			responsive: true,
 			searching: false, // Disable the search box
+			pageLength: 6,   // Show 6 entries per page
+			lengthMenu: [6, 10, 15, 20], // Custom options for number of entries per page
 			order: [[0, 'desc']] // Order by the first column (start time) in descending order
 		});
 	});
