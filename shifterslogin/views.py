@@ -159,14 +159,27 @@ def shift_details(request):
     return render(request, 'shift_details.html', context)
 
 
+@login_required
 def end_shift(request):
+    # Find the latest active shift for the user
     shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
     if shift:
         shift.shift_end = timezone.now()
-        shift.shift_active = False  # Set the active state to false
+        shift.shift_active = False
         shift.save()
+
+        # Check if there is an ongoing break and end it
+        active_breaks = Break.objects.filter(shift=shift, break_end__isnull=True, break_active=True)
+        for active_break in active_breaks:
+            active_break.break_end = timezone.now()
+            active_break.break_active = False
+            active_break.save()
+
         messages.success(request, "You have ended your shift.")
-    return redirect('index')  # TODO: maybe another page instead of back to the home?
+    else:
+        messages.warning(request, "No active shift found.")
+
+    return redirect('index')
 
 
 @login_required
