@@ -28,7 +28,7 @@
                         </div>
                     {% else %}
 						<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
-						<p class="fw-light">You started your shift at: {{ active_shift.shift_start }}</p>
+						<p class="fw-light">You started your shift on: {{ active_shift.shift_start }}</p>
 						<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
 						href="{% url 'shift_details' %}">
 							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift

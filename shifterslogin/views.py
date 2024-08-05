@@ -194,11 +194,13 @@ def start_break(request):
 @login_required
 def end_break(request):
     active_shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
-    active_break = Break.objects.filter(shift=active_shift, break_end__isnull=True).last()
-    if active_break:
-        active_break.break_end = timezone.now()
-        active_break.save()
-        return redirect('shift_details')  # Redirect to shift_details after resuming work
+    if active_shift:
+        active_break = Break.objects.filter(shift=active_shift, break_end__isnull=True, break_active=True).last()
+        if active_break:
+            active_break.break_end = timezone.now()
+            active_break.break_active = False
+            active_break.save()
+            return redirect('shift_details')  # Redirect to shift_details after resuming work
     return JsonResponse({'status': 'failed'}, status=400)
 
 
