@@ -70,42 +70,46 @@
 			<!-- History Section -->
 			<div class="container mt-5">
 				<h2 class="text-center font-weight-bold">Your Shift History</h2>
-				<div class="table-responsive">
-					<table id="history-table" class="table table-sm table-bordered table-striped table-hover text-center cell-border dt-center">
-						<thead>
-							<tr>
-								<th class="text-center">Start Time</th>
-								<th class="text-center">End Time</th>
-								<th class="text-center">Duration</th>
-							</tr>
-						</thead>
-						<tbody>
-							{% for shift in shifts_history %}
+				{% if shifts_history %}
+					<div class="table-responsive">
+						<table id="history-table" class="table table-sm table-bordered table-striped table-hover text-center cell-border dt-center">
+							<thead>
 								<tr>
-									<td class="text-center">{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
-									<td class="text-center">
-										{% if shift.shift_end %}
-											{{ shift.shift_end|date:"Y-m-d H:i:s" }}
-										{% else %}
-											Ongoing
-										{% endif %}
-									</td>
-									<td class="text-center">
-										{% if shift.duration_hours %}
-											{{ shift.duration_hours|floatformat:2 }} hours
-										{% else %}
-											Ongoing
-										{% endif %}
-									</td>
+									<th class="text-center">Start Time</th>
+									<th class="text-center">End Time</th>
+									<th class="text-center">Duration</th>
 								</tr>
-							{% empty %}
-								<tr>
-									<td colspan="3" class="text-center">No history available.</td>
-								</tr>
-							{% endfor %}
-						</tbody>
-					</table>
-				</div>
+							</thead>
+							<tbody>
+								{% for shift in shifts_history %}
+									<tr>
+										<td class="text-center">{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
+										<td class="text-center">
+											{% if shift.shift_end %}
+												{{ shift.shift_end|date:"Y-m-d H:i:s" }}
+											{% else %}
+												Ongoing
+											{% endif %}
+										</td>
+										<td class="text-center">
+											{% if shift.duration_hours %}
+												{{ shift.duration_hours|floatformat:2 }} hours
+											{% else %}
+												Ongoing
+											{% endif %}
+										</td>
+									</tr>
+								{% empty %}
+									<tr>
+										<td colspan="3" class="text-center">No history available.</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% else %}
+					<p class="text-center">No shift history available.</p>
+				{% endif %}
 			</div>
 		{% else %}
 			<div class="text-center">
@@ -180,7 +184,10 @@
 			searching: false, // Disable the search box
 			pageLength: 6,   // Show 6 entries per page
 			lengthMenu: [6, 10, 15, 20], // Custom options for number of entries per page
-			order: [[0, 'desc']] // Order by the first column (start time) in descending order
+			order: [[0, 'desc']], // Order by the first column (start time) in descending order
+			language: {
+				emptyTable: "No shift history available." // Message when there's no data
+			}
 		});
 	});
 
