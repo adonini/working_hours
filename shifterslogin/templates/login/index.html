@@ -11,12 +11,29 @@
 			<div class="col-md-9 mb-3 mb-md-0 text-center">
 				{% if active_shift %}
 					<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
-					<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
-					<p class="fw-light">You started your shift at: {{ active_shift.shift_start }}</p>
-					<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
-					href="{% url 'shift_details' %}">
-						<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
-					</a>
+					{% if active_break %}
+                        <div class="alert alert-warning border-2 rounded font-weight-bold w-auto d-inline-block">You are on a break!</div>
+                        <p class="fw-light">You are currently on a break since {{ active_break.break_start }}.</p>
+						<p class="fw-light">If you want to continue with your shift, please click the "Resume Working" button.</p>
+						<p class="fw-light">If instead you finished working, please click on "End Shift" button to terminate the active session.</p>
+                        <div class="d-flex justify-content-center">
+                            <a class="btn btn-outline-danger btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow end-shift-btn"
+							href="javascript:void(0);" id="end-shift-btn">
+								<i class="fa-regular fa-circle-stop me-2"></i> End Shift
+							</a>
+                            <a class="btn btn-outline-success btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow continue-work-btn"
+							href="javascript:void(0);" id="continue-work-btn">
+								<i class="fa-regular fa-circle-play me-2"></i> Resume Working
+							</a>
+                        </div>
+                    {% else %}
+						<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
+						<p class="fw-light">You started your shift at: {{ active_shift.shift_start }}</p>
+						<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
+						href="{% url 'shift_details' %}">
+							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
+						</a>
+					{% endif %}
 				{% else %}
 					<div>
 						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
@@ -116,8 +133,44 @@
                     alert("An error occurred. Please try again.");
                 }
             });
-        });
-    });
+		});
+
+		$("#continue-work-btn").click(function(event){
+			event.preventDefault();
+			$.ajax({
+				url: "{% url 'end_break' %}",
+				type: "POST",
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}'
+				},
+				success: function(data) {
+					window.location.href = "{% url 'shift_details' %}";
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error:", status, error);
+					alert("An error occurred while resuming work. Please try again.");
+				}
+			});
+		});
+
+		$("#end-shift-btn").click(function(event){
+			event.preventDefault();
+			$.ajax({
+				url: "{% url 'end_shift' %}",
+				type: "POST",
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}'
+				},
+				success: function(data) {
+					window.location.href = "{% url 'index' %}";
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error:", status, error);
+					alert("An error occurred while ending the shift. Please try again.");
+				}
+			});
+		});
+	});
 
 	$(function() {
 		$('#history-table').DataTable({
