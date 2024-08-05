@@ -180,22 +180,27 @@
 		});
 	});
 
-    function updateDateTime() {
-        var now = new Date();
+	function updateDateTimeUTC() {
+		var now = new Date();
+		// Get UTC components
+		var utcYear = now.getUTCFullYear();
+		var utcMonth = now.getUTCMonth() + 1; // Months are zero-based
+		var utcDate = now.getUTCDate();
+		var utcDay = now.getUTCDay();
+		var utcHours = now.getUTCHours();
+		var utcMinutes = now.getUTCMinutes();
+		// Format day, date, and time manually (convert numeric values to human-readable names)
+		var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+		var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-        var optionsDay = { weekday: 'long' };
-        var formattedDay = now.toLocaleDateString('en-US', optionsDay);
+		var formattedDay = days[utcDay];
+		var formattedDate = `${months[utcMonth - 1]} ${utcDate}, ${utcYear}`;
+		var formattedTime = `${utcHours.toString().padStart(2, '0')}:${utcMinutes.toString().padStart(2, '0')}`;
 
-        var optionsDate = { month: 'long', day: 'numeric' };
-        var formattedDate = now.toLocaleDateString('en-US', optionsDate);
+		document.getElementById('current-date-time').innerHTML = `${formattedDay}<br>${formattedDate}<br>${formattedTime} UTC`;
+	}
 
-        var optionsTime = { hour: '2-digit', minute: '2-digit', hour12: false };
-        var formattedTime = now.toLocaleTimeString('en-US', optionsTime);
-
-        document.getElementById('current-date-time').innerHTML = `${formattedDay}<br>${formattedDate}<br>${formattedTime}`;
-    }
-
-    updateDateTime();
-    setInterval(updateDateTime, 60000);
+	updateDateTimeUTC();
+	setInterval(updateDateTimeUTC, 60000);
 </script>
 {% endblock content %}
