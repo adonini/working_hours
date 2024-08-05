@@ -21,3 +21,13 @@ class Shift(models.Model):
 
     class Meta:
         db_table = 'shifts'
+
+
+class Break(models.Model):
+    shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='breaks')
+    break_start = models.DateTimeField()
+    break_end = models.DateTimeField(null=True, blank=True)
+    break_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'breaks'
