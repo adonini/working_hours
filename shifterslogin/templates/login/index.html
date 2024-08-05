@@ -55,13 +55,15 @@
 			<!-- Sidebar -->
 			<div class="col-md-3 mt-2">
 				<div class="sidebar custom-sidebar">
-					<p class="d-flex fs-4 justify-content-center align-items-center text-center" id="current-date-time"></p>
+					<p class="d-flex fs-4 justify-content-center align-items-center text-center fw-bold" id="current-date-time"></p>
 
-					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Day Total</p>
+					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center fw-bolder">Day Total</p>
 					<p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_today|floatformat:2 }} hours</p>
+					<p class="text-center d-flex justify-content-center align-items-center">Breaks: {{ total_breaks_today|floatformat:2 }} hours</p>
 
-					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center font-weight-bold"> Week Total</p>
+					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center fw-bolder">Week Total</p>
 					<p class="text-center d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_week|floatformat:2 }} hours</p>
+					<p class="text-center d-flex justify-content-center align-items-center">Breaks: {{ total_breaks_week|floatformat:2 }} hours</p>
 				</div>
 			</div>
 
