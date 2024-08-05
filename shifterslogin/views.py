@@ -58,12 +58,6 @@ class Index(TemplateView):
             )
             total_hours_worked_today /= 3600  # Convert to hours
 
-            # total_hours_break_today = sum(
-            #     (shift.break_end - shift.break_start).total_seconds()
-            #     for shift in shifts_today if shift.break_end and shift.break_start
-            # )
-            # total_hours_break_today /= 3600  # Convert to hours
-
             # Get shifts for the week
             shifts_week = Shift.objects.filter(user=self.request.user, shift_start__date__range=[start_of_week, end_of_week])
 
@@ -74,23 +68,33 @@ class Index(TemplateView):
             )
             total_hours_worked_week /= 3600  # Convert to hours
 
-            # total_hours_break_week = sum(
-            #     (shift.break_end - shift.break_start).total_seconds()
-            #     for shift in shifts_week if shift.break_end and shift.break_start
-            # )
-            # total_hours_break_week /= 3600  # Convert to hours
-
             # Check for active shift
             active_shift = Shift.objects.filter(user=self.request.user, shift_active=True).last()
+
+            # Calculate the total break time in minutes for today
+            breaks_today = Break.objects.filter(shift__user=self.request.user, break_start__date=today)
+            total_breaks_today = sum((brk.break_end - brk.break_start).total_seconds()
+                                     for brk in breaks_today if brk.break_end)
+            total_breaks_today /= 3600  # Convert to hours
+
+            # Calculate the total break time in minutes for this week
+            breaks_week = Break.objects.filter(shift__user=self.request.user, break_start__date__range=[start_of_week, end_of_week])
+            total_breaks_week = sum((brk.break_end - brk.break_start).total_seconds()
+                                    for brk in breaks_week if brk.break_end)
+            total_breaks_week /= 3600  # Convert to hours
+
+            # Check for active break
+            active_break = Break.objects.filter(shift=active_shift, break_active=True).last() if active_shift else None
 
             # create context
             context['current_datetime'] = now
             context['total_hours_worked_today'] = total_hours_worked_today
-            #context['total_hours_break_today'] = total_hours_break_today
             context['total_hours_worked_week'] = total_hours_worked_week
-            #context['total_hours_break_week'] = total_hours_break_week
             context['shifts_history'] = shifts_history
             context['active_shift'] = active_shift
+            context['total_breaks_today'] = total_breaks_today
+            context['total_breaks_week'] = total_breaks_week
+            context['active_break'] = active_break
         return context
 
 
