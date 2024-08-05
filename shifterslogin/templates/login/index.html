@@ -176,6 +176,7 @@
 		$('#history-table').DataTable({
 			responsive: true,
 			searching: false, // Disable the search box
+			order: [[0, 'desc']] // Order by the first column (start time) in descending order
 		});
 	});
 
