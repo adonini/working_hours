@@ -8,6 +8,7 @@ done
 echo "PostgreSQL started"
 
 # Run migrations
+python3 manage.py makemigrations
 python3 manage.py migrate
 
 # Create super-user

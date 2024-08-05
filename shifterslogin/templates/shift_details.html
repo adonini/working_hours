@@ -1,0 +1,59 @@
+{% extends 'login/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <i class="fa-regular fa-circle-check fa-6x" style="color: #63E6BE;"></i>
+            <h3 class="fw-light mt-2">You are working since:</h3>
+            <p id="clock" class="fw-light"> <!-- Clock updated via JavaScript --> </p>
+            <p class="fw-light">Started working at: {{ start_time }} UTC</p>
+
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{% url 'end_shift' %}" class="btn btn-danger rounded mx-2">
+                    <i class="fa-regular fa-circle-stop fa-2xl me-2"></i>
+                    End Shift</a>
+                <a href="{% url 'start_break' %}" class="btn btn-primary rounded mx-2">
+                    <i class="fa-regular fa-mug-hot fa-2xl me-2" style="color: #ffffff;"></i>
+                    Start a Break</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Function to update the clock
+    function updateClock() {
+        var startTime = new Date(Date.UTC(
+            {{ shift.shift_start|date:"Y" }},
+            {{ shift.shift_start|date:"m" }} - 1, // JavaScript months are 0-11
+            {{ shift.shift_start|date:"d" }},
+            {{ shift.shift_start|date:"H" }},
+            {{ shift.shift_start|date:"i" }},
+            {{ shift.shift_start|date:"s" }}
+        ));
+        // Get the current time in UTC
+        var now = new Date();
+        var nowUTC = new Date(Date.UTC(
+            now.getUTCFullYear(),
+            now.getUTCMonth(),
+            now.getUTCDate(),
+            now.getUTCHours(),
+            now.getUTCMinutes(),
+            now.getUTCSeconds()
+        ));
+        var elapsed = Math.floor((nowUTC.getTime() - startTime.getTime()) / 1000); // time in seconds
+
+        var hours = Math.floor(elapsed / 3600);
+        var minutes = Math.floor((elapsed % 3600) / 60);
+        var seconds = elapsed % 60;
+
+        document.getElementById('clock').innerText = hours + ' hours ' + minutes + ' minutes ' + seconds + ' seconds';
+    }
+
+    // Update the clock immediately and then every second
+    updateClock();
+    setInterval(updateClock, 1000);
+</script>
+{% endblock content %}
