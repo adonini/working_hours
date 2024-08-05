@@ -1,10 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.views.generic import TemplateView
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import LoginForm
-from .models import Shift, ShiftType
+from .models import Shift, ShiftType, Break
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
@@ -151,6 +152,35 @@ def end_shift(request):
     return redirect('index')  # TODO: maybe another page instead of back to the home?
 
 
+@login_required
 def start_break(request):
-    # Implement functionality to start a break
-    return redirect('home')
+    active_shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
+    if active_shift:
+        Break.objects.create(shift=active_shift, break_start=timezone.now())
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'failed'}, status=400)
+
+
+@login_required
+def end_break(request):
+    active_shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
+    active_break = Break.objects.filter(shift=active_shift, break_end__isnull=True).last()
+    if active_break:
+        active_break.break_end = timezone.now()
+        active_break.save()
+        return redirect('shift_details')  # Redirect to shift_details after resuming work
+    return JsonResponse({'status': 'failed'}, status=400)
+
+
+@login_required
+def break_details(request):
+    active_shift = get_object_or_404(Shift, user=request.user, shift_end__isnull=True, shift_active=True)
+    active_break = Break.objects.filter(shift=active_shift, break_end__isnull=True).last()
+    if not active_break:
+        return redirect('shift_details')  # Redirect if no active break is found
+
+    context = {
+        'active_break': active_break,
+        'break_start_time': active_break.break_start.strftime('%Y-%m-%d %H:%M:%S'),
+    }
+    return render(request, 'break_details.html', context)
