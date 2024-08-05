@@ -135,13 +135,26 @@ def start_shift(request):
         return render(request, 'your_template.html')
 
 
+@login_required
 def shift_details(request):
     shift = Shift.objects.filter(user=request.user, shift_end__isnull=True).last()
     if not shift:
         return redirect('index')  # Redirect if no active shift is found
+
+    # Calculate the total worked time subtracting break times
+    total_worked_time = timezone.now() - shift.shift_start
+    total_break_time = sum(
+        (break_.break_end - break_.break_start).total_seconds()
+        for break_ in Break.objects.filter(shift=shift) if break_.break_end
+    )
+    total_worked_time -= timedelta(seconds=total_break_time)
+
     context = {
         'shift': shift,
         'start_time': shift.shift_start.strftime('%Y-%m-%d %H:%M:%S'),
+        'total_worked_time': total_worked_time,
+        'total_break_time': total_break_time,
+        'active_break': Break.objects.filter(shift=shift, break_end__isnull=True).last()
     }
     return render(request, 'shift_details.html', context)
 
