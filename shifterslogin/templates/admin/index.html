@@ -1,0 +1,84 @@
+{% extends "admin/index.html" %}
+{% load static i18n %}
+
+{% block title %}LST Working Hour Tracker Dashboard{% endblock %}
+{% block breadcrumbs %}
+{% endblock %}
+<!-- Removes the default Title-->
+{% block content-title %}
+{% endblock %}
+
+{% block content %}
+<div class="content d-flex flex-column align-items-center">
+    <h2>Welcome to LST Working Hour Tracker Dashboard</h2>
+    <p>This is a custom admin page content.</p>
+    
+    <p>This is the content body</p>
+    <div class="cards w-100 d-flex justify-content-around">
+        <div class="small-box w-25 bg-gradient-success">
+            <div class="inner">
+              <h3>2</h3>
+              <p>User Registrations</p>
+            </div>
+            <div class="icon">
+              <i class="fas fa-user-plus"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+              More info <i class="fas fa-arrow-circle-right"></i>
+            </a>
+            <div class="ribbon-wrapper ribbon-lg">
+                <div class="ribbon bg-warning">
+                New members
+                </div>
+            </div>
+        </div>
+        <div class="info-box w-25 ml-3">
+            <span class="info-box-icon bg-info"><i class="far fa-bookmark"></i></span>
+            <div class="info-box-content">
+              <span class="info-box-text">Break times</span>
+              <span class="info-box-number">56 hours</span>
+              <div class="progress">
+                <div class="progress-bar bg-info" style="width: 66%"></div>
+              </div>
+              <span class="progress-description">
+                25% Increase in 30 Days
+              </span>
+            </div>
+        </div>
+    </div>
+    <div class="timeline">
+        <!-- Timeline time label -->
+        <div class="time-label">
+          <span class="bg-green">23 Aug. 2019</span>
+        </div>
+        <div>
+        <!-- Before each timeline item corresponds to one icon on the left scale -->
+          <i class="fas fa-envelope bg-blue"></i>
+          <!-- Timeline item -->
+          <div class="timeline-item">
+          <!-- Time -->
+            <span class="time"><i class="fas fa-clock"></i> 12:05</span>
+            <!-- Header. Optional -->
+            <h3 class="timeline-header"><a href="#">Support Team</a> sent you an email</h3>
+            <!-- Body -->
+            <div class="timeline-body">
+              Etsy doostang zoodles disqus groupon greplin oooj voxy zoodles,
+              weebly ning heekya handango imeem plugg dopplr jibjab, movity
+              jajah plickers sifteo edmodo ifttt zimbra. Babblely odeo kaboodle
+              quora plaxo ideeli hulu weebly balihoo...
+            </div>
+            <!-- Placement of additional controls. Optional -->
+            <div class="timeline-footer">
+              <a class="btn btn-primary btn-sm">Read more</a>
+              <a class="btn btn-danger btn-sm">Delete</a>
+            </div>
+          </div>
+        </div>
+        <!-- The last icon means the story is complete -->
+        <div>
+          <i class="fas fa-clock bg-gray"></i>
+        </div>
+      </div>      
+           
+</div>
+{% endblock %}
