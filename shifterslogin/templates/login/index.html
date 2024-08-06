@@ -1,21 +1,225 @@
 {% extends 'login/base.html' %}
+{% load static %}
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div>
-	<div class="row">
-		<div class="col-sm-11 col-md-5 mx-auto mt-5 px-3 text-center">
-			{% if user.is_authenticated %}
-				<h1 class="fw-light">LST Shifters</h1>
-				<p class="fw-light">Manage your woking times starting and finishing it once you end your shift.</p>
-			{% else %}
-				<div>
-					<h1 class="fw-light">LST Shifters</h1>
-					<br/>
-					<a href="{% url 'login' %}" class="btn btn-primary">Log In To Get Started!</a>
+</style>
+<div class="container mt-1">
+    <div class="row">
+		{% if user.is_authenticated %}
+			<!-- Main Content -->
+			<div class="col-md-9 mb-3 mb-md-0 d-flex flex-column justify-content-center align-items-center text-center">
+				{% if active_shift %}
+					<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+					{% if active_break %}
+                        <div class="alert alert-warning border-2 rounded font-weight-bold w-auto d-inline-block">You are on a break!</div>
+                        <p class="fw-light">You are currently on a break since {{ active_break.break_start }}.</p>
+						<p class="fw-light">If you want to continue with your shift, please click the "Resume Working" button.</p>
+						<p class="fw-light">If instead you finished working, please click on "End Shift" button to terminate the active session.</p>
+                        <div class="d-flex justify-content-center">
+                            <a class="btn btn-outline-danger btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow end-shift-btn"
+							href="javascript:void(0);" id="end-shift-btn">
+								<i class="fa-regular fa-circle-stop me-2"></i> End Shift
+							</a>
+                            <a class="btn btn-outline-success btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow continue-work-btn"
+							href="javascript:void(0);" id="continue-work-btn">
+								<i class="fa-regular fa-circle-play me-2"></i> Resume Working
+							</a>
+                        </div>
+                    {% else %}
+						<div class="alert alert-warning border-2 font-weight-bold w-auto d-inline-block">You have an active shift!</div>
+						<p class="fw-light">You started your shift on: {{ active_shift.shift_start }}</p>
+						<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
+						href="{% url 'shift_details' %}">
+							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
+						</a>
+					{% endif %}
+				{% else %}
+					<div>
+						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+						<p class="fw-light">If you are having a night off, press the "Night off" button.</p>
+						<p class="fw-light">To start counting working time press "Start shift".</p>
+						<div class="d-flex justify-content-center">
+							<a class="btn btn-outline-success btn-font mx-2 border-4 p-4 text-dark font-weight-bold d-flex justify-content-center align-items-center rounded shadow start-shift-btn"
+								href="javascript:void(0);" id="start-shift-btn">
+								<i class="fa-regular fa-circle-play me-2"></i> Start shift
+							</a>
+							<a class="btn btn-outline-warning btn-font mx-2 border-4 text-dark p-4 font-weight-bold d-flex justify-content-center align-items-center rounded shadow off-night-btn"
+								href="javascript:void(0);" id="night-off-btn">
+								<img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="50" height="50"> Night Off
+							</a>
+						</div>
+					</div>
+				{% endif %}
+			</div>
+			<!-- Sidebar -->
+			<div class="col-md-3 mt-2">
+				<div class="sidebar custom-sidebar">
+					<p class="d-flex fs-4 justify-content-center align-items-center text-center fw-bold" id="current-date-time"></p>
+
+					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center fw-bolder">Day Total</p>
+					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder">
+						{{ total_worked_and_breaks_today|floatformat:2 }} hours
+					</p>
+					<p class="text-center mt-1 d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_today|floatformat:2 }} hours</p>
+					<p class="text-center d-flex justify-content-center align-items-center">Breaks: {{ total_breaks_today|floatformat:2 }} hours</p>
+
+					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center fw-bolder">Week Total</p>
+					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder">
+						{{ total_worked_and_breaks_week|floatformat:2 }} hours
+					</p>
+					<p class="text-center d-flex mt-1 justify-content-center align-items-center">Work: {{ total_hours_worked_week|floatformat:2 }} hours</p>
+					<p class="text-center d-flex justify-content-center align-items-center">Breaks: {{ total_breaks_week|floatformat:2 }} hours</p>
 				</div>
-			{% endif %}
-		</div>
-	</div>
+			</div>
+
+			<!-- History Section -->
+			<div class="container mt-5">
+				<h2 class="text-center font-weight-bold">Last 30 Days Shift History</h2>
+				{% if shifts_history %}
+					<div class="table-responsive">
+						<table id="history-table" class="table table-sm table-bordered table-striped table-hover text-center cell-border dt-center">
+							<thead>
+								<tr>
+									<th class="text-center">Start Time</th>
+									<th class="text-center">End Time</th>
+									<th class="text-center">Duration</th>
+								</tr>
+							</thead>
+							<tbody>
+								{% for shift in shifts_history %}
+									<tr>
+										<td class="text-center">{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
+										<td class="text-center">
+											{% if shift.shift_end %}
+												{{ shift.shift_end|date:"Y-m-d H:i:s" }}
+											{% else %}
+												Ongoing
+											{% endif %}
+										</td>
+										<td class="text-center">
+											{% if shift.duration_hours %}
+												{{ shift.duration_hours|floatformat:2 }} hours
+											{% else %}
+												Ongoing
+											{% endif %}
+										</td>
+									</tr>
+								{% empty %}
+									<tr>
+										<td colspan="3" class="text-center">No history available.</td>
+									</tr>
+								{% endfor %}
+							</tbody>
+						</table>
+					</div>
+				{% else %}
+					<p class="text-center">No shift history available.</p>
+				{% endif %}
+			</div>
+		{% else %}
+			<div class="col-12 d-flex justify-content-center align-items-center" style="height: 60vh;">
+				<div class="text-center">
+					<p class="fw-light fs-3">Authenticate yourself to track working hours</p>
+					<br/>
+					<a href="{% url 'login' %}" class="btn btn-primary p-4 fs-5 font-weight-bold rounded shadow">Log In To Get Started!</a>
+				</div>
+			</div>
+		{% endif %}
+    </div>
 </div>
+
+<script>
+    $(document).ready(function(){
+        $("#start-shift-btn").click(function(event){
+            event.preventDefault();
+            $.ajax({
+                url: "{% url 'start_shift' %}",
+                type: "POST",
+                data: {
+                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                },
+                success: function(data) {
+                    window.location.href = "{% url 'shift_details' %}";
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    alert("An error occurred. Please try again.");
+                }
+            });
+		});
+
+		$("#continue-work-btn").click(function(event){
+			event.preventDefault();
+			$.ajax({
+				url: "{% url 'end_break' %}",
+				type: "POST",
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}'
+				},
+				success: function(data) {
+					window.location.href = "{% url 'shift_details' %}";
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error:", status, error);
+					alert("An error occurred while resuming work. Please try again.");
+				}
+			});
+		});
+
+		$("#end-shift-btn").click(function(event){
+			event.preventDefault();
+			$.ajax({
+				url: "{% url 'end_shift' %}",
+				type: "POST",
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}'
+				},
+				success: function(data) {
+					window.location.href = "{% url 'index' %}";
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error:", status, error);
+					alert("An error occurred while ending the shift. Please try again.");
+				}
+			});
+		});
+	});
+
+	$(function() {
+		$('#history-table').DataTable({
+			responsive: true,
+			searching: false, // Disable the search box
+			pageLength: 6,   // Show 6 entries per page
+			lengthMenu: [6, 10, 15, 20], // Custom options for number of entries per page
+			order: [[0, 'desc']], // Order by the first column (start time) in descending order
+			language: {
+				emptyTable: "No shift history available." // Message when there's no data
+			}
+		});
+	});
+
+	function updateDateTimeUTC() {
+		var now = new Date();
+		// Get UTC components
+		var utcYear = now.getUTCFullYear();
+		var utcMonth = now.getUTCMonth() + 1; // Months are zero-based
+		var utcDate = now.getUTCDate();
+		var utcDay = now.getUTCDay();
+		var utcHours = now.getUTCHours();
+		var utcMinutes = now.getUTCMinutes();
+		// Format day, date, and time manually (convert numeric values to human-readable names)
+		var days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+		var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+		var formattedDay = days[utcDay];
+		var formattedDate = `${months[utcMonth - 1]} ${utcDate}, ${utcYear}`;
+		var formattedTime = `${utcHours.toString().padStart(2, '0')}:${utcMinutes.toString().padStart(2, '0')}`;
+
+		document.getElementById('current-date-time').innerHTML = `${formattedDay}<br>${formattedDate}<br>${formattedTime} UTC`;
+	}
+
+	updateDateTimeUTC();
+	setInterval(updateDateTimeUTC, 60000);
+</script>
 {% endblock content %}
