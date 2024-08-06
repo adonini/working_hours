@@ -1,0 +1,22 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}LST WHT Dashboard{% endblock %}
+
+{% block branding %}
+<div id="site-name"><a href="{% url 'admin:index' %}">{{ site_header|default:_('LST WHT Dashboard') }}</a></div>
+{% endblock %}
+
+{% block nav-global %}
+<ul class="nav-global">
+    <li><a href="/">Home</a></li>
+    <li><a href="/admin/">Admin</a></li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<!-- Personaliza el cuerpo de la página de administración aquí -->
+<h2>Welcome to Custom Admin Dashboard</h2>
+<p>This is a custom admin page content.</p>
+{% endblock %}
+
