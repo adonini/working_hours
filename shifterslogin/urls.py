@@ -12,4 +12,8 @@ urlpatterns = [
     path('start-break/', views.start_break, name='start_break'),
     path('end-break/', views.end_break, name='end_break'),
     path('break-details/', views.break_details, name='break_details'),
+    path('night-off/', views.night_off, name='night_off'),
+    path('revert-off/', views.revert_off, name='revert_off'),
+    path('off-details/', views.off_details, name='off_details'),
+
 ]

@@ -1,0 +1,40 @@
+{% extends 'login/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <img src="{% static 'svg/moon-sleep.svg' %}" alt="Night off icon" class="me-2" width="75" height="75"/>
+            <h3 class="fw-light mt-4">You have the night off today</h3>
+            <p class="fw-light">If you selected night off by mistake you can revert it by clicking the button below.</p>
+
+            <div class="d-flex justify-content-center mt-4">
+                <a href="{% url 'revert_off' %}" class="btn btn-danger rounded mx-2" id="revert">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Revert</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#revert").click(function(event){
+			event.preventDefault();
+			$.ajax({
+				url: "{% url 'revert_off' %}",
+				type: "POST",
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}'
+				},
+				success: function(data) {
+					window.location.href = "{% url 'index' %}";
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error:", status, error);
+					alert("An error occurred while reverting the night off. Please try again.");
+				}
+			});
+		});
+</script>
+{% endblock content %}

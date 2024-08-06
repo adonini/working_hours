@@ -11,6 +11,10 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from datetime import timedelta
 
+TYPEHOURS = {
+    2: 4.5,
+    3: 9
+}
 
 def logout_user(request):
     logout(request)
@@ -36,7 +40,7 @@ class Index(TemplateView):
             # Fetch shift history (last 30 days)
             thirty_days_ago = today - timedelta(days=30)
             shifts_history = Shift.objects.filter(user=self.request.user,
-                                                  shift_start__gte=thirty_days_ago).order_by('-shift_start')
+                                                  shift_start__gte=thirty_days_ago).order_by('-shift_start') #.exclude(shift_type=ShiftType.objects.get(id=1)) This removes the days off
 
             # Calculate duration for each shift in hours
             for shift in shifts_history:
@@ -47,7 +51,7 @@ class Index(TemplateView):
                     shift.duration_hours = None
 
             # Get shifts for today
-            shifts_today = Shift.objects.filter(user=self.request.user, shift_start__date=today)
+            shifts_today = Shift.objects.filter(user=self.request.user, shift_start__date=today).exclude(shift_type=ShiftType.objects.get(id=1))
 
             # Calculate total hours worked for today
             total_hours_worked_today = sum(
@@ -71,7 +75,7 @@ class Index(TemplateView):
             total_worked_and_breaks_today = total_hours_worked_today + total_breaks_today
 
             # Get shifts for the week
-            shifts_week = Shift.objects.filter(user=self.request.user, shift_start__date__range=[start_of_week, end_of_week])
+            shifts_week = Shift.objects.filter(user=self.request.user, shift_start__date__range=[start_of_week, end_of_week]).exclude(shift_type=ShiftType.objects.get(id=1))
 
             # Calculate total hours worked for the week
             total_hours_worked_week = sum(
@@ -100,6 +104,15 @@ class Index(TemplateView):
             # Check for active break
             active_break = Break.objects.filter(shift=active_shift, break_active=True).last() if active_shift else None
 
+            # Check if the user has set the night as off
+            night_off = Shift.objects.filter(user=self.request.user, shift_type=1).last()
+            if night_off is not None:
+                currentTime = timezone.now()
+                startDate = night_off.shift_start.strftime('%Y/%m/%d')
+                todayDate = currentTime.strftime('%Y/%m/%d')
+                if startDate == todayDate:
+                    night_off = True
+
             # create context
             context['current_datetime'] = now
             context['total_hours_worked_today'] = total_hours_worked_today
@@ -111,6 +124,7 @@ class Index(TemplateView):
             context['active_break'] = active_break
             context['total_worked_and_breaks_today'] = total_worked_and_breaks_today
             context['total_worked_and_breaks_week'] = total_worked_and_breaks_week
+            context['night_off'] = night_off
         return context
 
 
@@ -131,7 +145,7 @@ def login_view(request):
 
 def start_shift(request):
     if request.method == "POST":
-        # Crear un nuevo registro en el modelo Shift
+        # Create a new Shift object into the model
         shift = Shift.objects.create(
             user=request.user,
             shift_start=timezone.now(),
@@ -139,7 +153,7 @@ def start_shift(request):
             #end_time=timezone.now() + timezone.timedelta(hours=8),
             #employee="Default Employee"
         )
-        # Devolver datos al template
+        # Return data into the template
         data = {
             'shift_id': shift.id,
             'start_time': shift.shift_start.strftime("%Y-%m-%d %H:%M:%S")
@@ -181,6 +195,12 @@ def end_shift(request):
     shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
     if shift:
         shift.shift_end = timezone.now()
+        delta = shift.shift_end - shift.shift_start
+        if delta.total_seconds() <= (TYPEHOURS[2] * 3600) and delta.total_seconds() > 0:
+            shift.shift_type = ShiftType.objects.get(id=2)
+        else:
+            shift.shift_type = ShiftType.objects.get(id=3)
+
         shift.shift_active = False
         shift.save()
 
@@ -232,3 +252,53 @@ def break_details(request):
         'break_start_time': active_break.break_start.strftime('%Y-%m-%d %H:%M:%S'),
     }
     return render(request, 'break_details.html', context)
+
+@login_required
+def night_off(request):
+    active_shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
+    if active_shift is None:
+        off = Shift.objects.filter(user=request.user, shift_type=ShiftType.objects.get(id=1)).last()
+        currentTime = timezone.now()
+        if off is not None:
+            startDate = off.shift_start.strftime('%Y/%m/%d')
+            todayDate = currentTime.strftime('%Y/%m/%d')
+            if startDate != todayDate:
+                off = Shift.objects.create(
+                    user=request.user,
+                    shift_start=currentTime,
+                    shift_end=currentTime,
+                    shift_type = ShiftType.objects.get(id=1),
+                    shift_active=False
+                )
+                messages.success(request, "You have setted your night off.")
+            else:
+                messages.warning(request, "You already have a shift.")
+        else:
+            off = Shift.objects.create(
+                user=request.user,
+                shift_start=currentTime,
+                shift_end=currentTime,
+                shift_type = ShiftType.objects.get(id=1),
+                shift_active=False
+            )
+            messages.success(request, "You have setted your night off.")
+
+    return redirect('index')
+
+@login_required
+def revert_off(request):
+    active_shift = Shift.objects.filter(user=request.user, shift_end__isnull=True, shift_active=True).last()
+    if active_shift is None:
+        off = Shift.objects.filter(user=request.user, shift_type=1).last()
+        startDate = off.shift_start.strftime('%Y/%m/%d')
+        currentTime = timezone.now()
+        todayDate = currentTime.strftime('%Y/%m/%d')
+        if startDate == todayDate:
+            off.delete()
+            return redirect('index')
+        else:
+            return JsonResponse({'status': 'failed'}, status=400)
+        
+@login_required
+def off_details(request):
+    return render(request, 'off_details.html')
