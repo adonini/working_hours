@@ -8,7 +8,7 @@
     <div class="row">
 		{% if user.is_authenticated %}
 			<!-- Main Content -->
-			<div class="col-md-9 mb-3 mb-md-0 text-center">
+			<div class="col-md-9 mb-3 mb-md-0 d-flex flex-column justify-content-center align-items-center text-center">
 				{% if active_shift %}
 					<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
 					{% if active_break %}
@@ -118,10 +118,12 @@
 				{% endif %}
 			</div>
 		{% else %}
-			<div class="text-center">
-				<p class="fw-light fs-3">Authenticate yourself to track working hours</p>
-				<br/>
-				<a href="{% url 'login' %}" class="btn btn-primary p-4 fs-5 font-weight-bold rounded shadow">Log In To Get Started!</a>
+			<div class="col-12 d-flex justify-content-center align-items-center" style="height: 60vh;">
+				<div class="text-center">
+					<p class="fw-light fs-3">Authenticate yourself to track working hours</p>
+					<br/>
+					<a href="{% url 'login' %}" class="btn btn-primary p-4 fs-5 font-weight-bold rounded shadow">Log In To Get Started!</a>
+				</div>
 			</div>
 		{% endif %}
     </div>
