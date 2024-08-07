@@ -1,6 +1,12 @@
-{% extends "admin/login.html" %}
-{% load i18n static %}
+{% extends "adminlte/login.html" %}
+{% load static %}
 
-{% block title %}LST WHT Dashboard{% endblock %}
-
-
+{% block logo %}
+<div class="login-logo d-flex justify-content-center align-items-center text-center">
+    <a href="{% block logo_href %}/{% endblock %}">
+        <img src="{% static 'images/CTAOLSTCollaboration_Logo.png' %}" alt="Logo" style="max-width: 500px; max-height: 500px;">
+        <br>
+        {% block logo_text %}<b>Admin</b> LST WHT{% endblock %}
+    </a>
+</div>
+{% endblock %}
