@@ -13,7 +13,7 @@
 					<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
 					{% if active_break %}
                         <div class="alert alert-warning border-2 rounded font-weight-bold w-auto d-inline-block">You are on a break!</div>
-                        <p class="fw-light">You are currently on a break since {{ active_break.break_start }}.</p>
+                        <p class="fw-light">You are currently on a break since {{ active_break.break_start }} UTC.</p>
 						<p class="fw-light">If you want to continue with your shift, please click the "Resume Working" button.</p>
 						<p class="fw-light">If instead you finished working, please click on "End Shift" button to terminate the active session.</p>
                         <div class="d-flex justify-content-center">
