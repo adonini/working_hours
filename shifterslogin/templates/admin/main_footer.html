@@ -1,28 +1,3 @@
-{% extends 'adminlte/lib/_main_sidebar.html' %}
-{% load static %}
+{% extends 'adminlte/lib/_main_footer.html' %}
 
-<!-- Set upper left corner logo -->
-{% block logo %}
-    <a href="/" class="brand-link">
-        <img src="{% static 'images/Reverse_CTAOLSTCollaboration_Logo.png' %}" alt="My Logo" class="brand-image img-circle elevation-3">
-        {% block logo_text %}<span class="brand-text font-weight-light">LST WHS</span>{% endblock %}
-    </a>
-{% endblock logo %}
-
-<!-- if left empty removes this block -->
-{% comment %} {% block user_panel %}
-{% endblock user_panel %} {% endcomment %}
-
-<!-- Set header for side navbar -->
-{% block nav_heading %}
-MAIN NAVIGATION
-{% endblock nav_heading %}
-
-<!-- Define navbar links -->
-{% block nav_links %}
-    <li>
-        <a href="#">
-            <i class="fa fa-dashboard"></i> <span>Dashboard</span>
-        </a>
-    </li>
-{% endblock nav_links %}
+<!--remove everything-->
