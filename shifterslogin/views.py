@@ -10,6 +10,9 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from datetime import timedelta
+import logging
+
+logger = logging.getLogger(__name__)
 
 TYPEHOURS = {
     2: 4.5,
@@ -112,6 +115,8 @@ class Index(TemplateView):
                 todayDate = currentTime.strftime('%Y/%m/%d')
                 if startDate == todayDate:
                     night_off = True
+                else:
+                    night_off = False
 
             # create context
             context['current_datetime'] = now
