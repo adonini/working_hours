@@ -1,5 +1,10 @@
 <nav class="navbar navbar-expand-lg bg-dark pt-4 pb-4 {% if not user.is_authenticated %}navbar-guest{% endif %}" data-bs-theme="dark">
     <div class="container-fluid">
+        {% if "details" in request.path %}
+        <a href="{% url 'index' %}">
+            <i class="fa-solid fa-house margin-left fa-2x"></i>
+        </a>
+        {% endif %}
         <a class="navbar-brand position-absolute top-50 start-50 translate-middle" href="#">
             <h1 class="text-white text-center">
                 LST Working Hour Tracker
@@ -11,7 +16,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse me-auto justify-content-end" id="navbarNav">
-                <ul class="navbar-nav">
+                <ul class="navbar-nav d-flex justify-content-center align-items-center">
                     <li class="nav-item">
                         <a class="nav-link" href="#">{{ user.username }}</a>
                     </li>

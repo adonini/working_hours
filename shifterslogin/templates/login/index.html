@@ -34,6 +34,14 @@
 							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Go to Active Shift
 						</a>
 					{% endif %}
+				{% elif night_off %}
+					<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
+					<div class="alert alert-success border-2 font-weight-bold w-auto d-inline-block">Enjoy your night off!</div>
+					<p class="fw-light">If you selected night off by mistake please click on the manage button below.</p>
+					<a class="mt-4 btn btn-outline-info btn-font border-4 p-4 text-dark font-weight-bold d-inline-flex justify-content-center align-items-center rounded shadow continue-shift-btn" 
+						href="{% url 'off_details' %}">
+							<i class="fa-solid fa-arrow-right-to-bracket me-3"></i> Manage Night Off
+						</a>
 				{% else %}
 					<div>
 						<h1 class="fw-light">Welcome back, {{ user.username }}!</h1>
@@ -57,19 +65,15 @@
 				<div class="sidebar custom-sidebar">
 					<p class="d-flex fs-4 justify-content-center align-items-center text-center fw-bold" id="current-date-time"></p>
 
-					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center fw-bolder">Day Total</p>
-					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder">
-						{{ total_worked_and_breaks_today|floatformat:2 }} hours
-					</p>
-					<p class="text-center mt-1 d-flex justify-content-center align-items-center">Work: {{ total_hours_worked_today|floatformat:2 }} hours</p>
-					<p class="text-center d-flex justify-content-center align-items-center">Breaks: {{ total_breaks_today|floatformat:2 }} hours</p>
+					<p class="text-center fs-3 mt-4 d-flex justify-content-center align-items-center fw-bolder">Day Total</p>
+					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder" id="day-total"></p>
+					<p class="text-center mt-1 d-flex justify-content-center align-items-center" id="d-work"></p>
+					<p class="text-center d-flex justify-content-center align-items-center" id="d-breaks"></p>
 
-					<p class="text-center fs-4 mt-4 d-flex justify-content-center align-items-center fw-bolder">Week Total</p>
-					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder">
-						{{ total_worked_and_breaks_week|floatformat:2 }} hours
-					</p>
-					<p class="text-center d-flex mt-1 justify-content-center align-items-center">Work: {{ total_hours_worked_week|floatformat:2 }} hours</p>
-					<p class="text-center d-flex justify-content-center align-items-center">Breaks: {{ total_breaks_week|floatformat:2 }} hours</p>
+					<p class="text-center fs-3 mt-4 d-flex justify-content-center align-items-center fw-bolder">Week Total <i class="fa-light fa-circle-info ms-2" id="info"></i></p>
+					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder" id="week-total"></p>
+					<p class="text-center d-flex mt-1 justify-content-center align-items-center" id="w-work"></p>
+					<p class="text-center d-flex justify-content-center align-items-center" id="w-breaks"></p>
 				</div>
 			</div>
 
@@ -88,23 +92,31 @@
 							</thead>
 							<tbody>
 								{% for shift in shifts_history %}
+									{% if shift.shift_start != shift.shift_end %}
+										<tr>
+											<td class="text-center">{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
+											<td class="text-center">
+												{% if shift.shift_end %}
+													{{ shift.shift_end|date:"Y-m-d H:i:s" }}
+												{% else %}
+													Ongoing
+												{% endif %}
+											</td>
+											<td class="text-center duration" data-duration="{{ shift.duration_hours|default:'0.00'|floatformat:4 }}">
+												{% if shift.duration_hours %}
+													{{ shift.duration_hours|floatformat:2 }} hours
+												{% else %}
+													Ongoing
+												{% endif %}
+											</td>
+										</tr>
+									{% else %}
 									<tr>
 										<td class="text-center">{{ shift.shift_start|date:"Y-m-d H:i:s" }}</td>
-										<td class="text-center">
-											{% if shift.shift_end %}
-												{{ shift.shift_end|date:"Y-m-d H:i:s" }}
-											{% else %}
-												Ongoing
-											{% endif %}
-										</td>
-										<td class="text-center">
-											{% if shift.duration_hours %}
-												{{ shift.duration_hours|floatformat:2 }} hours
-											{% else %}
-												Ongoing
-											{% endif %}
-										</td>
+										<td class="text-center">NIGHT OFF</td>
+										<td></td>
 									</tr>
+									{% endif %}
 								{% empty %}
 									<tr>
 										<td colspan="3" class="text-center">No history available.</td>
@@ -128,7 +140,6 @@
 		{% endif %}
     </div>
 </div>
-
 <script>
     $(document).ready(function(){
         $("#start-shift-btn").click(function(event){
@@ -184,6 +195,24 @@
 				}
 			});
 		});
+
+		$("#night-off-btn").click(function(event){
+			event.preventDefault();
+			$.ajax({
+				url: "{% url 'night_off' %}",
+				type: "POST",
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}'
+				},
+				success: function(data) {
+					window.location.href = "{% url 'off_details' %}";
+				},
+				error: function(xhr, status, error) {
+					console.error("AJAX Error:", status, error);
+					alert("An error occurred while setting the night off. Please try again.");
+				}
+			});
+		});
 	});
 
 	$(function() {
@@ -195,7 +224,7 @@
 			order: [[0, 'desc']], // Order by the first column (start time) in descending order
 			language: {
 				emptyTable: "No shift history available." // Message when there's no data
-			}
+			},
 		});
 	});
 
@@ -219,7 +248,99 @@
 		document.getElementById('current-date-time').innerHTML = `${formattedDay}<br>${formattedDate}<br>${formattedTime} UTC`;
 	}
 
+	let sidebarElements = {
+        "#day-total": {{ total_worked_and_breaks_today|floatformat:2|default:0|safe }},
+        "#d-work": {{ total_hours_worked_today|floatformat:2|default:0|safe }},
+        "#d-breaks": {{ total_breaks_today|floatformat:2|default:0|safe }},
+        "#week-total": {{ total_worked_and_breaks_week|floatformat:2|default:0|safe }},
+        "#w-work": {{ total_hours_worked_week|floatformat:2|default:0|safe }},
+        "#w-breaks": {{ total_breaks_week|floatformat:2|default:0|safe }}
+    };
+
+    // Function to format the duration to text
+    function formatDurationToText(duration) {
+    // Extract the integer part as hours
+    let hours = Math.floor(duration);
+    
+    // Extract the decimal part
+    let decimalPart = duration - hours;
+    
+    // Convert the decimal part to total minutes
+    let totalMinutes = Math.floor(decimalPart * 60);
+    
+    // Calculate minutes and seconds
+    let minutes = Math.floor(totalMinutes);
+    let seconds = Math.floor((decimalPart * 3600) % 60);
+    
+    // Build the text string
+    let result = "";
+    if (hours > 0) {
+        result += hours + " hours ";
+    }
+    if (minutes > 0) {
+        result += minutes + " minutes ";
+    }
+    /*if (seconds > 0 && minutes > 0) {
+        result += "and " + seconds + " seconds";
+    }*/
+	if (seconds > 0 && minutes == 0){
+		result += seconds + " seconds";
+	} 
+
+    // Trim the final text string
+    return result.trim();
+}
+
+    // Process each key and convert the value to a formatted string
+    let keys = Object.keys(sidebarElements);
+    keys.forEach(key => {
+        let foundElement = document.querySelector(key);
+        let bodyString = formatDurationToText(parseFloat(sidebarElements[key]));
+		if (key.includes('work')){
+			foundElement.innerHTML = "Work: "+bodyString
+		}else if(key.includes('break')){
+			foundElement.innerHTML = "Breaks: "+bodyString
+		}else{
+			foundElement.innerHTML = bodyString
+		}
+	});
+
+	// Function to update the durations in the table
+	function updateDurations() {
+            // Select all duration cells
+            let durationCells = document.querySelectorAll('#history-table tbody td.duration');
+
+            durationCells.forEach(cell => {
+                let durationText = cell.getAttribute('data-duration');
+                let duration = parseFloat(durationText);
+
+                // Check if the duration is a valid float number
+                if (!isNaN(duration)) {
+                    let formattedDuration = formatDurationToText(duration);
+                    cell.textContent = formattedDuration;
+                }
+            });
+        }
+
+	let dayTotalTime =
 	updateDateTimeUTC();
 	setInterval(updateDateTimeUTC, 60000);
+	
+	let infoIcon = document.querySelector('#info')
+	let infoDiv = document.createElement('div')
+	infoIcon.addEventListener('mouseover', ()=>{
+		infoDiv.innerHTML = ''
+		infoDiv.appendChild(document.createTextNode("Weekly hours are counted from Monday to Sunday."))
+		infoDiv.setAttribute('id', 'hoverBox')
+		infoIcon.parentNode.appendChild(infoDiv)
+	})
+	infoIcon.addEventListener('mouseout', ()=>{
+		infoIcon.parentNode.removeChild(infoDiv)
+	})
+
+	// Call updateDurations when the DOM is fully loaded
+	document.addEventListener('DOMContentLoaded', function () {
+		updateDurations();
+	});
 </script>
 {% endblock content %}
