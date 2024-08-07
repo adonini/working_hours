@@ -70,7 +70,7 @@
 					<p class="text-center mt-1 d-flex justify-content-center align-items-center" id="d-work"></p>
 					<p class="text-center d-flex justify-content-center align-items-center" id="d-breaks"></p>
 
-					<p class="text-center fs-3 mt-4 d-flex justify-content-center align-items-center fw-bolder">Week Total</p>
+					<p class="text-center fs-3 mt-4 d-flex justify-content-center align-items-center fw-bolder">Week Total <i class="fa-light fa-circle-info ms-2" id="info"></i></p>
 					<p class="text-center fs-4 d-flex justify-content-center align-items-center fw-bolder" id="week-total"></p>
 					<p class="text-center d-flex mt-1 justify-content-center align-items-center" id="w-work"></p>
 					<p class="text-center d-flex justify-content-center align-items-center" id="w-breaks"></p>
@@ -283,7 +283,7 @@
     /*if (seconds > 0 && minutes > 0) {
         result += "and " + seconds + " seconds";
     }*/
-	if (seconds >= 0 && minutes == 0){
+	if (seconds > 0 && minutes == 0){
 		result += seconds + " seconds";
 	} 
 
@@ -325,6 +325,18 @@
 	let dayTotalTime =
 	updateDateTimeUTC();
 	setInterval(updateDateTimeUTC, 60000);
+	
+	let infoIcon = document.querySelector('#info')
+	let infoDiv = document.createElement('div')
+	infoIcon.addEventListener('mouseover', ()=>{
+		infoDiv.innerHTML = ''
+		infoDiv.appendChild(document.createTextNode("Weekly hours are counted from Monday to Sunday."))
+		infoDiv.setAttribute('id', 'hoverBox')
+		infoIcon.parentNode.appendChild(infoDiv)
+	})
+	infoIcon.addEventListener('mouseout', ()=>{
+		infoIcon.parentNode.removeChild(infoDiv)
+	})
 
 	// Call updateDurations when the DOM is fully loaded
 	document.addEventListener('DOMContentLoaded', function () {
