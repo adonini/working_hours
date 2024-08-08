@@ -1,4 +1,5 @@
 {% extends 'adminlte/lib/_main_sidebar.html' %}
+{% load static admin_urls i18n %}
 {% load static %}
 
 <!-- Set upper left corner logo -->
@@ -25,4 +26,28 @@ MAIN NAVIGATION
             <i class="fa fa-dashboard"></i> <span>Dashboard</span>
         </a>
     </li>
+    {% block nav_links_default %}
+        {% for app in app_list %} <!-- Not woking because no app_list passed (I tried but could not make it) -->
+            <li class="nav-item has-treeview">
+                <a href="#" class="nav-link">
+                    <i class="nav-icon {{ app.app_icon }}"></i>
+                    <p>
+                        {{ app.name }}
+                        <i class="right fas fa-angle-left"></i>
+                    </p>
+                </a>
+                <ul class="nav nav-treeview">
+                    {% for model in app.models %}
+                        <li class="nav-item">
+                            <a href="{{ model.admin_url }}" class="nav-link">
+                                <i class="far fa-circle nav-icon"></i>
+                                <p>{{ model.name }}</p>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        {% endfor %}
+    {% endblock %}
+    {{block.super}} <!--Uses the paren block (Not working sinc the parent is adminlte template and not base one)-->
 {% endblock nav_links %}
