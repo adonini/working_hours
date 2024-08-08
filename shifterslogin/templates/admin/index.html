@@ -3,31 +3,22 @@
 
 {% block content %}
 <div class="content d-flex flex-column align-items-center">
-    <div class="cards w-100 d-flex justify-content-around">
-        <div class="small-box w-25 bg-gradient-success">
-            <div class="inner">
-              <h3>2</h3>
-              <p>User Registrations</p>
+      <!-- Card for Total Number of Shifters -->
+      <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card card-small">
+          <div class="row g-0 d-flex align-items-center">
+            <div class="col-md-4 d-flex justify-content-center">
+              <i class="fas fa-users text-info" style="font-size: 4em;"></i>
             </div>
-            <div class="icon">
-              <i class="fas fa-user-plus"></i>
+            <div class="col-md-8">
+              <div class="card-body">
+                <h4 class="card-title text-center font-weight-bold">Total number of shifters ever</h4>
+                <p class="card-text text-center" style="font-size: 2em;">{{ users_with_shifts }}</p>
+              </div>
             </div>
-            <a href="#" class="small-box-footer">
-              More info <i class="fas fa-arrow-circle-right"></i>
-            </a>
-            <div class="ribbon-wrapper ribbon-lg">
-                <div class="ribbon bg-warning">
-                New members
-                </div>
-            </div>
+          </div>
         </div>
-        <div class="info-box w-25 ml-3">
-            <span class="info-box-icon bg-info"><i class="far fa-bookmark"></i></span>
-            <div class="info-box-content">
-              <span class="info-box-text">Break times</span>
-              <span class="info-box-number">56 hours</span>
-              <div class="progress">
-                <div class="progress-bar bg-info" style="width: 66%"></div>
+      </div>
               </div>
               <span class="progress-description">
                 25% Increase in 30 Days
