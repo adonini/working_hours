@@ -9,6 +9,11 @@ from django.http import JsonResponse
 import json
 from .models import ShiftType, Shift, Break
 from django.core.serializers.json import DjangoJSONEncoder
+import logging
+
+# Get a logger instance
+logger = logging.getLogger('myapp')
+
 
 admin.site.register(ShiftType)
 admin.site.register(Shift)

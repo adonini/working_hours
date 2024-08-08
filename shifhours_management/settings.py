@@ -190,49 +190,36 @@ AUTH_LDAP_CONNECTION_OPTIONS = {
     ldap.OPT_X_TLS_REQUIRE_CERT: ldap.OPT_X_TLS_NEVER,
 }
 
+# Define the log file path
+LOG_FILE_PATH = os.path.join(BASE_DIR, 'logs/django.log')
+
+# Ensure the logs directory exists
+os.makedirs(os.path.dirname(LOG_FILE_PATH), exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': LOG_FILE_PATH,
         },
-    },
-    'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'shifterslogin': {  
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'DEBUG',
             'propagate': True,
         },
-        "django_auth_ldap": {
-            "level": 'DEBUG',
-            "handlers": ['console'],
+        'myapp': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
             'propagate': True,
         },
     },
 }
-
-import logging
-logger = logging.getLogger('django_auth_ldap')
-logger.addHandler(logging.StreamHandler())
-logger.setLevel(logging.DEBUG)
