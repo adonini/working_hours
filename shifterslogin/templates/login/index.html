@@ -139,8 +139,41 @@
 			</div>
 		{% endif %}
     </div>
+	{% if last_auto_ended and not modal_check %}
+		<div class="modalbg">
+			<div class="modal-auto-ended">
+				<h2>The last shift was ended automatically</h2>
+				<p>This might be because you forgot to end your shift. If that is the case click on the <b>"Confirm"</b> button.</p>
+				<p>If you are finishing your shift now due to any matter please click on the <b>"Update end time"</b> button.</p>
+				<div class="buttons">
+					<a href="{% url 'modal_check' %}" id="modal-confirm" class="modal-button">Confirm</a>
+					<a href="{% url 'update_endtime' %}" id="modal-update" class="modal-button">Update end time</a>
+				</div>
+			</div>
+		</div>
+	{% endif %}
 </div>
 <script>
+	let body = document.querySelector('body')
+	if("{{last_auto_ended|escapejs}}" && !"{{modal_check|escapejs}}"){
+		body.classList.add('no-scroll')
+	}
+	let modal = document.querySelector('.modal-auto-ended')
+	let confirmButton = document.querySelector('#modal-confirm')
+	let updateButton = document.querySelector('#modal-update')
+	const closeModal = ()=>{
+		modal.parentNode.parentNode.removeChild(modal.parentNode)
+		if(body.classList.contains("no-scroll")){
+			body.classList.remove("no-scroll")
+		}
+	}
+	if(confirmButton != null){
+		confirmButton.addEventListener('click', closeModal)
+	}
+	if(updateButton != null){
+		updateButton.addEventListener('click', closeModal)
+	}
+
     $(document).ready(function(){
         $("#start-shift-btn").click(function(event){
             event.preventDefault();
@@ -295,13 +328,23 @@
     let keys = Object.keys(sidebarElements);
     keys.forEach(key => {
         let foundElement = document.querySelector(key);
-        let bodyString = formatDurationToText(parseFloat(sidebarElements[key]));
-		if (key.includes('work')){
-			foundElement.innerHTML = "Work: "+bodyString
-		}else if(key.includes('break')){
-			foundElement.innerHTML = "Breaks: "+bodyString
-		}else{
-			foundElement.innerHTML = bodyString
+        if (sidebarElements[key] > 0) {
+			let bodyString = formatDurationToText(parseFloat(sidebarElements[key]));
+			if (key.includes('work')){
+				foundElement.innerHTML = "Work: " + bodyString;
+			} else if(key.includes('break')){
+				foundElement.innerHTML = "Breaks: " + bodyString;
+			} else {
+				foundElement.innerHTML = bodyString;
+			}
+		} else {
+			if (key.includes('work')) {
+				foundElement.innerHTML = "Work: No Data";
+			} else if (key.includes('break')) {
+				foundElement.innerHTML = "Breaks: No Data";
+			} else {
+				foundElement.innerHTML = "No Data";
+			}
 		}
 	});
 

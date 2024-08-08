@@ -9,7 +9,9 @@ from .models import Shift, ShiftType, Break
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
-from datetime import timedelta
+from datetime import timedelta, datetime
+from django.utils import timezone
+import pytz
 import logging
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,23 @@ class Index(TemplateView):
         if self.request.user.is_authenticated:
             now = timezone.now()
             today = now.date()
+            last_auto_ended = False
+            modal_check = False
+
+            # Check if the user forgot to end the shift
+            lastShift = Shift.objects.filter(user=self.request.user).last()
+            nextDay = lastShift.shift_start + timedelta(days=1)
+            nextDay = datetime(nextDay.year, nextDay.month, nextDay.day, 7, 0, 0, tzinfo=pytz.UTC)
+            if now > nextDay and lastShift.shift_end is None:
+                lastShift.shift_end = nextDay
+                lastShift.auto_end = True
+                lastShift.save()
+
+            if(lastShift.auto_end and not lastShift.modal_check):
+                last_auto_ended = True
+            
+            modal_check = lastShift.modal_check
+
 
             # Define the start and end of the week with Monday as the start and Sunday as the end
             start_of_week = today - timedelta(days=(today.weekday() - 0) % 7)  # Monday is 0
@@ -130,6 +149,8 @@ class Index(TemplateView):
             context['total_worked_and_breaks_today'] = total_worked_and_breaks_today
             context['total_worked_and_breaks_week'] = total_worked_and_breaks_week
             context['night_off'] = night_off
+            context['last_auto_ended'] = last_auto_ended
+            context['modal_check'] = modal_check
         return context
 
 
@@ -273,7 +294,7 @@ def night_off(request):
                     shift_start=currentTime,
                     shift_end=currentTime,
                     shift_type = ShiftType.objects.get(id=1),
-                    shift_active=False
+                    shift_active=False,
                 )
                 messages.success(request, "You have setted your night off.")
             else:
@@ -284,7 +305,7 @@ def night_off(request):
                 shift_start=currentTime,
                 shift_end=currentTime,
                 shift_type = ShiftType.objects.get(id=1),
-                shift_active=False
+                shift_active=False,
             )
             messages.success(request, "You have setted your night off.")
 
@@ -307,3 +328,19 @@ def revert_off(request):
 @login_required
 def off_details(request):
     return render(request, 'off_details.html')
+
+@login_required
+def modal_check(request):
+    lastShift = Shift.objects.filter(user=request.user).last()
+    lastShift.modal_check = True
+    lastShift.save()
+    return redirect('index')
+
+@login_required
+def update_endtime(request):
+    now = timezone.now()
+    lastShift = Shift.objects.filter(user=request.user).last()
+    lastShift.shift_end = now
+    lastShift.modal_check = True
+    lastShift.save()
+    return redirect('index')
