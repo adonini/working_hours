@@ -24,10 +24,10 @@ def custom_admin_index(request):
     # Calculate the number of users with at least one shift
     users_with_shifts = User.objects.annotate(shift_count=Count('shift')).filter(shift_count__gt=0).count()
 
-    # Calculate the time range for the last 30 days
+    # Calculate the time range for the last 23 days
     now = timezone.now()
     end_date = now.date()
-    start_date = end_date - timezone.timedelta(days=30)
+    start_date = end_date - timezone.timedelta(days=23)
 
     # Initialize chart data
     chart_data = []
@@ -42,14 +42,17 @@ def custom_admin_index(request):
             start_date = timezone.datetime.strptime(start_date, '%Y-%m-%d').date()
             end_date = timezone.datetime.strptime(end_date, '%Y-%m-%d').date()
 
+            # Set the end_date to the end of the day
+            end_date = timezone.make_aware(timezone.datetime.combine(end_date, timezone.datetime.max.time()))
+
             # Calculate the number of days and weeks in the range
-            days_count = (end_date - start_date).days + 1
+            days_count = (end_date.date() - start_date).days + 1
             weeks_count = days_count / 7
 
             # Aggregate total hours worked per user
             shifts = Shift.objects.filter(
                 shift_start__gte=start_date,
-                shift_end__lte=end_date
+                shift_end__lte=end_date  # Explicitly include end_date
             ).values(
                 'user__username'
             ).annotate(
@@ -57,6 +60,9 @@ def custom_admin_index(request):
                     ExpressionWrapper(F('shift_end') - F('shift_start'), output_field=fields.DurationField())
                 )
             )
+
+            # Log the found shifts
+            logger.debug('Found Shifts: %s', list(shifts))
 
             chart_data = [
                 {
@@ -67,12 +73,15 @@ def custom_admin_index(request):
                 for shift in shifts
             ]
 
+            logger.debug('POST Chart Data: %s', chart_data)
             return JsonResponse({'chart_data': chart_data}, encoder=DjangoJSONEncoder)
 
     # Provide default chart data for initial load
+    end_date = timezone.make_aware(timezone.datetime.combine(end_date, timezone.datetime.max.time()))
+
     shifts = Shift.objects.filter(
         shift_start__gte=start_date,
-        shift_end__lte=end_date
+        shift_end__lte=end_date  # Explicitly include end_date
     ).values(
         'user__username'
     ).annotate(
@@ -81,7 +90,7 @@ def custom_admin_index(request):
         )
     )
 
-    days_count = (end_date - start_date).days + 1
+    days_count = (end_date.date() - start_date).days + 1
     weeks_count = days_count / 7
 
     chart_data = [
@@ -92,6 +101,8 @@ def custom_admin_index(request):
         }
         for shift in shifts
     ]
+
+    logger.debug('Default Chart Data: %s', chart_data)
 
     as_json = json.dumps(chart_data, cls=DjangoJSONEncoder)
 
