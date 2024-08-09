@@ -47,12 +47,17 @@ class Index(TemplateView):
             if now > nextDay and lastShift.shift_end is None:
                 lastShift.shift_end = nextDay
                 lastShift.auto_end = True
-                lastShift.save()
+                delta = lastShift.shift_end - lastShift.shift_start
+                if delta.total_seconds() <= (TYPEHOURS[2] * 3600) and delta.total_seconds() > 0:
+                    lastShift.shift_type = ShiftType.objects.get(id=2)
+                else:
+                    lastShift.shift_type = ShiftType.objects.get(id=3)
 
             if(lastShift.auto_end and not lastShift.modal_check):
                 last_auto_ended = True
             
             modal_check = lastShift.modal_check
+            lastShift.save()
 
 
             # Define the start and end of the week with Monday as the start and Sunday as the end
@@ -332,15 +337,21 @@ def off_details(request):
 @login_required
 def modal_check(request):
     lastShift = Shift.objects.filter(user=request.user).last()
+    lastShift.shift_active = False
     lastShift.modal_check = True
     lastShift.save()
     return redirect('index')
 
 @login_required
 def update_endtime(request):
-    now = timezone.now()
     lastShift = Shift.objects.filter(user=request.user).last()
-    lastShift.shift_end = now
+    lastShift.shift_end = timezone.now()
+    delta = lastShift.shift_end - lastShift.shift_start
+    if delta.total_seconds() <= (TYPEHOURS[2] * 3600) and delta.total_seconds() > 0:
+        lastShift.shift_type = ShiftType.objects.get(id=2)
+    else:
+        lastShift.shift_type = ShiftType.objects.get(id=3)
+    lastShift.shift_active = False
     lastShift.modal_check = True
     lastShift.save()
     return redirect('index')
