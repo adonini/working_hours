@@ -15,5 +15,7 @@ urlpatterns = [
     path('night-off/', views.night_off, name='night_off'),
     path('revert-off/', views.revert_off, name='revert_off'),
     path('off-details/', views.off_details, name='off_details'),
-
+    path('off-details/', views.off_details, name='off_details'),
+    path('modal-check/', views.modal_check, name='modal_check'),
+    path('update_endtime/', views.update_endtime, name='update_endtime'),
 ]

@@ -4,3 +4,4 @@ django-crispy-forms==2.3
 crispy-bootstrap5==2024.2
 python-dotenv==1.0.1
 django-auth-ldap
+pytz
