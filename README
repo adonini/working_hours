@@ -1,0 +1,60 @@
+# Django Shift Management Application
+
+This Django application is designed to track working hours and breaks for users. All the data are stored in a PostgreSQL database and PgAdmin is available for database administration. The application is containerized using Docker, making it easy to set up and deploy.
+
+<!-- ## Table of Contents
+
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Environment Variables](#environment-variables)
+    - [Running the Application](#running-the-application)
+    - [Application Features](#application-features)
+    - [Database Models](#database-models)
+    - [Usage](#usage) -->
+
+## Prerequisites
+
+Ensure you have the following installed on your machine:
+
+- Docker
+- Docker Compose
+
+## Installation
+
+1. **Clone the repository:**
+
+   ```sh
+    git clone <your-repo-url>
+    cd <your-repo-directory>
+   ```
+
+2. **Create a .env file in the root directory by copying the .env.example file:**
+
+    ```sh
+    cp .env.example .env
+    ```
+
+    The environment variables required for the application are listed in the .env.example file. Copy this file to .env and replace the placeholder values with your own.
+
+3. **Build and run the containers:**
+
+    ```sh
+    docker-compose up --build
+    ```
+
+    This will start the following services:
+    - PostgreSQL database
+    - PgAdmin for database management
+    - Django web application
+
+
+## Creating a Superuser
+
+A Django superuser is automatically created when running the app.
+
+
+## Release
+
+A pre-release of this application is also available.
+
+To use the release, simply download the files, update the `.env` file with your own environment variables as described in the [Installation](#installation) section, and follow the instructions to build and run the Docker containers.
